@@ -100,8 +100,8 @@ export class Player {
         if (!this.alive) return;
 
         // 1. Mouse look
-        this.yaw += this.input.look.x;
-        this.pitch = clamp(this.pitch + this.input.look.y, -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
+        this.yaw -= this.input.look.x;
+        this.pitch = clamp(this.pitch - this.input.look.y, -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
 
         // 2. Movement calculation
         let mx = this.input.move.x;
@@ -127,7 +127,7 @@ export class Player {
         let c = Math.cos(this.yaw);
         
         let moveX = (mx * c - my * s) * targetSpeed;
-        let moveZ = (mx * s + my * c) * targetSpeed;
+        let moveZ = (-mx * s - my * c) * targetSpeed;
 
         // 3. Crouch
         let wantCrouch = this.input.down('crouch');
