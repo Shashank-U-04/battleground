@@ -190,7 +190,7 @@ const postFragmentShader = `
     
     // Wobble
     vec2 wuv = vUv;
-    float wTime = uTime * 4.0;
+    float wTime = floor(uTime * 12.0);
     wuv.x += (vnoise(vUv * 10.0 + wTime) - 0.5) * 0.003;
     wuv.y += (vnoise(vUv * 10.0 - wTime) - 0.5) * 0.003;
     
@@ -297,6 +297,12 @@ const postFragmentShader = `
       col = mix(col, vec3(lum), uSlow * 0.8);
     }
     
+    // Paper vignette
+    vec2 pCnt = wuv - 0.5;
+    float pD = length(pCnt);
+    float pVig = smoothstep(0.4, 0.9, pD);
+    col = mix(col, col * 0.8, pVig);
+
     // Hurt vignette
     if (uHurt > 0.0 || uLowHp > 0.0) {
        vec2 cnt = wuv - 0.5;
