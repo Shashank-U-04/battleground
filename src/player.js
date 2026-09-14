@@ -53,7 +53,7 @@ export class Player {
         this.grappleMaxDist = 60;
         
         this.grappleLine = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.02, 0.02, 1, 8),
+            new THREE.CylinderGeometry(0.02, 0.02, 1, 8, 16),
             new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.8 })
         );
         this.grappleLine.geometry.translate(0, 0.5, 0);
@@ -243,6 +243,32 @@ export class Player {
             _v2.set(0, 0, -1).applyEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ')); // forward
             
             let hit = this.world.raycast(_v1, _v2, this.grappleMaxDist, noShoot);
+            
+            // Magnetic Aim Assist (Cone lock-on)
+            if (!hit) {
+                let bestDist = Infinity;
+                let bestPoint = null;
+                for (const box of this.world.boxes) {
+                    if (box.data && box.data.noGrapple) continue;
+                    const center = box.min.clone().lerp(box.max, 0.5);
+                    const dirToCenter = center.clone().sub(_v1);
+                    const dist = dirToCenter.length();
+                    if (dist < this.grappleMaxDist && dist > 2) {
+                        dirToCenter.normalize();
+                        const dot = dirToCenter.dot(_v2);
+                        if (dot > 0.96) { // ~15 degrees
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                                bestPoint = center;
+                            }
+                        }
+                    }
+                }
+                if (bestPoint) {
+                    hit = { point: bestPoint };
+                }
+            }
+
             if (hit) {
                 this.grappleTarget.copy(hit.point);
                 this.grappling = true;
@@ -261,9 +287,14 @@ export class Player {
             
             if (dist > 1) {
                 dir.normalize();
-                this.body.vel.x = damp(this.body.vel.x, dir.x * 25, 5, dt);
-                this.body.vel.y = damp(this.body.vel.y, dir.y * 25, 5, dt);
-                this.body.vel.z = damp(this.body.vel.z, dir.z * 25, 5, dt);
+                // Dual-force system: strong pull + momentum retention
+                const pullForce = 45;
+                this.body.vel.x += dir.x * pullForce * dt;
+                this.body.vel.y += dir.y * pullForce * dt;
+                this.body.vel.z += dir.z * pullForce * dt;
+                
+                // Retain momentum but add slight drag for stability
+                this.body.vel.multiplyScalar(Math.pow(0.4, dt));
             }
             
             this.grappleStamina -= dt * 0.5;
