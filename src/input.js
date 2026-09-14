@@ -130,6 +130,11 @@ export class Input {
 
     document.addEventListener('pointerlockchange', () => {
       this.pointerLocked = document.pointerLockElement === this.canvas;
+      // Always clear all mouse buttons on lock change to prevent stuck "fire"
+      // (the click that acquires lock sends mousedown but the mouseup is swallowed by the browser)
+      this.mouseBtns = {};
+      this.mx = 0;
+      this.my = 0;
       if (this.onLockChange) this.onLockChange(this.pointerLocked);
     });
 
