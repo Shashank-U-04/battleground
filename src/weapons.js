@@ -345,8 +345,15 @@ export class Weapons {
       this.swingT = def.swingDur;
       if (this.enemies && this.enemies.inArc) {
         const inArc = this.enemies.inArc(camPos, camDir, def.reach, def.arc);
+        let hitSomething = false;
         for (const e of inArc) {
-          if (this.enemies.damage) this.enemies.damage(e, def.dmg, camDir, camPos);
+          if (this.enemies.damage) {
+            this.enemies.damage(e, def.dmg, camDir, camPos);
+            hitSomething = true;
+          }
+        }
+        if (hitSomething && this.enemies.ctx.game) {
+          this.enemies.ctx.game.hitstop(0.04, 0.05); // 40ms freeze
         }
       }
       if (this.effects && this.effects.katanaDeflect) {
