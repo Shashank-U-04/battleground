@@ -328,7 +328,7 @@ export class Weapons {
         let hitNormal = null;
 
         if (eHit && (!wHit || eHit.dist < wHit.dist)) {
-          if (this.enemies.damage) this.enemies.damage(eHit.enemy, def.dmg, rayDir, camPos);
+          if (this.enemies.damage) this.enemies.damage(eHit.enemy, def.dmg, { source: 'gun', dir: rayDir, point: eHit.point, crit: eHit.part === 'head' });
           hitPoint = eHit.point;
           hitNormal = eHit.normal;
         } else if (wHit) {
@@ -348,7 +348,7 @@ export class Weapons {
         let hitSomething = false;
         for (const e of inArc) {
           if (this.enemies.damage) {
-            this.enemies.damage(e, def.dmg, camDir, camPos);
+            this.enemies.damage(e.enemy, def.dmg, { source: 'katana', dir: camDir, point: e.enemy.root ? e.enemy.root.position : camPos, crit: false });
             hitSomething = true;
           }
         }
@@ -391,7 +391,7 @@ export class Weapons {
     if (this.enemies && this.enemies.inArc) {
       const inArc = this.enemies.inArc(camPos, camDir, def.reach * 1.5, Math.cos(1.2)); // wider arc, longer reach
       for (const e of inArc) {
-        if (this.enemies.damage) this.enemies.damage(e, def.dmg * 3, camDir, camPos); // 3x dmg
+        if (this.enemies.damage) this.enemies.damage(e.enemy, def.dmg * 3, { source: 'katana', dir: camDir, point: e.enemy.root ? e.enemy.root.position : camPos, crit: true }); // 3x dmg
       }
     }
     
@@ -415,5 +415,10 @@ export class Weapons {
     if (this.hud && this.hud.setGrenades) {
       this.hud.setGrenades(this.grenades);
     }
+  }
+  addFocus(amount) {
+    this.focusMeter = Math.min(1, (this.focusMeter || 0) + (amount / 100));
+    this.focusReady = this.focusMeter >= 1;
+    if (this.hud && this.hud.setFocus) this.hud.setFocus(this.focusMeter, this.focusReady);
   }
 }
