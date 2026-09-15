@@ -135,13 +135,7 @@ export class Weapons {
     }
   }
 
-  addFocus(amount) {
-    this.focusMeter = clamp(this.focusMeter + amount, 0, 1);
-    if (this.focusMeter >= 1) {
-      this.focusReady = true;
-    }
-    if (this.hud && this.hud.setFocus) this.hud.setFocus(this.focusMeter, this.focusReady);
-  }
+
 
   update(dt, input) {
     // 1. Weapon switching
@@ -150,12 +144,13 @@ export class Weapons {
     if (input.pressed('3')) this.switchWeapon(2);
     if (input.pressed('4')) this.switchWeapon(3);
 
-    // Scroll wheel (assuming input.wheelDir exists)
-    if (input.wheelDir) {
-      let next = (this.activeSlot + Math.sign(input.wheelDir)) % this.slots.length;
-      if (next < 0) next += this.slots.length;
+    // Scroll wheel weapon switching
+    if (input.pressed('prevWeapon')) {
+      let prev = (this.activeSlot - 1 + this.slots.length) % this.slots.length;
+      this.switchWeapon(prev);
+    } else if (input.pressed('nextWeapon')) {
+      let next = (this.activeSlot + 1) % this.slots.length;
       this.switchWeapon(next);
-      input.wheelDir = 0; // consume
     }
 
     const slot = this.slots[this.activeSlot];
