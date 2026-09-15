@@ -142,9 +142,9 @@ export class HUD {
         this.messageEl = document.createElement('div');
         this.messageEl.className = 'message';
         this.msgMain = document.createElement('div');
-        this.msgMain.className = 'main';
+        this.msgMain.className = 'msg-main';
         this.msgSub = document.createElement('div');
-        this.msgSub.className = 'sub';
+        this.msgSub.className = 'msg-sub';
         this.messageEl.appendChild(this.msgMain);
         this.messageEl.appendChild(this.msgSub);
         this.el.appendChild(this.messageEl);
@@ -380,26 +380,32 @@ export class HUD {
     }
 
     showScope(on) {
-        this.scope.style.display = on ? 'block' : 'none';
+        if (on) {
+            this.scope.classList.add('on');
+        } else {
+            this.scope.classList.remove('on');
+        }
     }
 
     hitmarker(isKill, isCrit) {
-        this.hitmarkerEl.className = 'hitmarker anim';
+        this.hitmarkerEl.className = 'hitmarker show';
         if (isKill) this.hitmarkerEl.classList.add('kill');
         if (isCrit) this.hitmarkerEl.classList.add('crit');
         setTimeout(() => {
-            this.hitmarkerEl.classList.remove('anim');
+            this.hitmarkerEl.classList.remove('show');
         }, 150);
     }
 
     showMessage(main, sub) {
         this.msgMain.textContent = main;
         this.msgSub.textContent = sub || '';
-        this.messageEl.classList.add('show');
+        this.msgMain.classList.remove('show');
+        void this.msgMain.offsetWidth; // force reflow for animation restart
+        this.msgMain.classList.add('show');
         if (this.msgTimeout) clearTimeout(this.msgTimeout);
         this.msgTimeout = setTimeout(() => {
-            this.messageEl.classList.remove('show');
-        }, 2000);
+            this.msgMain.classList.remove('show');
+        }, 2500);
     }
 
     addKillFeed(text, points) {
