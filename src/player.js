@@ -418,6 +418,18 @@ export class Player {
         return false;
     }
 
+    addAmmo(amount) {
+        // Pickup gives ammo to all gun slots
+        if (this.weapons) {
+            for (const slot of this.weapons.slots) {
+                if (slot.def.ammo !== Infinity) {
+                    slot.reserve = Math.min(slot.reserve + Math.floor(amount / 2), slot.def.reserve * 2);
+                }
+            }
+            this.weapons.updateHUDAmmo();
+        }
+    }
+
     getHurt() {
         return Math.max(0, this.hurtT);
     }
