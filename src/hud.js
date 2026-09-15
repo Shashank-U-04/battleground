@@ -182,7 +182,7 @@ export class HUD {
         panel.className = 'panel';
         
         const title = document.createElement('h1');
-        title.innerHTML = 'DOODLE DISTRICT<br><i>a sketchy shooter</i>';
+        title.innerHTML = 'DOODLE BATTLE<br><i>a sketchy shooter</i>';
         panel.appendChild(title);
 
         const cols = document.createElement('div');

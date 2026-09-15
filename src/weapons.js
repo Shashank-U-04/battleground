@@ -238,7 +238,10 @@ export class Weapons {
     this.kickSpring.update(dt);
 
     const t = performance.now() * 0.001;
-    const isWalking = this.player && this.player.onGround && this.player.vel && (Math.abs(this.player.vel.x) > 1 || Math.abs(this.player.vel.z) > 1);
+    const playerBody = this.player ? this.player.body : null;
+    const isWalking = playerBody && playerBody.onGround && 
+                      (Math.abs(playerBody.vel.x) > 1 || Math.abs(playerBody.vel.z) > 1);
+    const isSprinting = this.player && this.player.isSprinting;
     
     const bobMag = isWalking ? 0.015 : 0.005;
     const bobSpeed = isWalking ? 12 : 3;
@@ -266,7 +269,7 @@ export class Weapons {
     }
 
     // Sprint tilt (if player is sprinting)
-    if (this.player && this.player.sprinting && !this.ads && isWalking && def.name !== 'Katana') {
+    if (isSprinting && !this.ads && isWalking && def.name !== 'Katana') {
       this.viewmodel.rotation.z = -0.3;
       this.viewmodel.position.x += 0.1;
       this.viewmodel.position.y -= 0.1;
@@ -297,11 +300,16 @@ export class Weapons {
     }
 
     if (this.kickSpring) {
-      this.kickSpring.kick(0, 0, 0.05); // kick back
+      this.kickSpring.kick(0, 0, 0.05);
       this.kickSpring.target.set(0, 0, 0);
     }
     if (this.player && this.player.recoilSpring) {
-      this.player.recoilSpring.kick(def.recoilUp, rand(-def.recoilSide, def.recoilSide));
+      // Spring3.kick(x, y, z) — must supply all 3; missing z caused NaN propagation
+      this.player.recoilSpring.kick(
+        rand(-def.recoilSide, def.recoilSide) * 0.004,
+        def.recoilUp * 0.004,
+        0
+      );
     }
 
     const camPos = this.camera.position;
@@ -323,7 +331,13 @@ export class Weapons {
         let hitNormal = null;
 
         if (eHit && (!wHit || eHit.dist < wHit.dist)) {
-          if (this.enemies.damage) this.enemies.damage(eHit.enemy, def.dmg, { source: 'gun', dir: rayDir, point: eHit.point, crit: eHit.part === 'head' });
+          let killed = false;
+          if (this.enemies.damage) {
+            killed = this.enemies.damage(eHit.enemy, def.dmg, { source: 'gun', dir: rayDir, point: eHit.point, crit: eHit.part === 'head' });
+          }
+          if (this.hud && this.hud.hitmarker) {
+            this.hud.hitmarker(killed, eHit.part === 'head');
+          }
           hitPoint = eHit.point;
           hitNormal = eHit.normal;
         } else if (wHit) {
@@ -341,14 +355,17 @@ export class Weapons {
       if (this.enemies && this.enemies.inArc) {
         const inArc = this.enemies.inArc(camPos, camDir, def.reach, def.arc);
         let hitSomething = false;
+        let killedSomething = false;
         for (const e of inArc) {
           if (this.enemies.damage) {
-            this.enemies.damage(e.enemy, def.dmg, { source: 'katana', dir: camDir, point: e.enemy.root ? e.enemy.root.position : camPos, crit: false });
+            const killed = this.enemies.damage(e.enemy, def.dmg, { source: 'katana', dir: camDir, point: e.enemy.root ? e.enemy.root.position : camPos, crit: false });
             hitSomething = true;
+            if (killed) killedSomething = true;
           }
         }
-        if (hitSomething && this.enemies.ctx.game) {
-          this.enemies.ctx.game.hitstop(0.04, 0.05); // 40ms freeze
+        if (hitSomething) {
+          if (this.hud && this.hud.hitmarker) this.hud.hitmarker(killedSomething, false);
+          if (this.enemies.ctx.game) this.enemies.ctx.game.hitstop(0.04, 0.05); // 40ms freeze
         }
       }
       if (this.effects && this.effects.katanaDeflect) {

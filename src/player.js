@@ -209,7 +209,7 @@ export class Player {
             this.dashCool = 1.5;
             D.play('dash');
             this.effects.shakeAmt += 0.2;
-            this.fovSpring.velocity += 20;
+            this.fovSpring.kick(20);
         }
 
         // 7. Gravity
