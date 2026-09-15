@@ -61,6 +61,7 @@ export class Player {
         this.grappleLine.visible = false;
         
         this.hurtT = 0;
+        this.spawnInvulT = 0;  // invulnerability timer after spawning
         this.regenDelay = 4;
         this.regenTimer = 0;
         this.regenRate = 15;
@@ -89,6 +90,7 @@ export class Player {
         this.coyoteT = 0;
         this.grappling = false;
         this.grappleStamina = 1;
+        this.spawnInvulT = 2.5; // 2.5s of invulnerability after spawning
         
         // Ensure grapple line is in the scene if camera is part of it
         if (!this.grappleLine.parent && this.camera.parent) {
@@ -98,6 +100,7 @@ export class Player {
 
     update(dt) {
         if (!this.alive) return;
+        if (this.spawnInvulT > 0) this.spawnInvulT -= dt;
 
         // 1. Mouse look
         this.yaw -= this.input.look.x;
@@ -367,6 +370,7 @@ export class Player {
 
     takeDamage(amount, sourcePos) {
         if (!this.alive) return;
+        if (this.spawnInvulT > 0) return; // spawn invulnerability
         this.hp -= amount;
         D.play('hurt');
         this.hurtT = 1.0;
