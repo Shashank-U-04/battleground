@@ -12,10 +12,10 @@ export function buildDistrict(scene, world) {
     };
 
     // Global settings options
-    const wallOpts = { ink: 0 };
-    const floorOpts = { ink: 1, fill: true };
+    const wallOpts = { ink: 0 };             // blue ink outlines
+    const floorOpts = { ink: 2, fill: false }; // dark ink grid lines — no solid fill
     const propOpts = { ink: 2, fill: false };
-    const railOpts = { ink: 0, fill: true };
+    const railOpts = { ink: 2, fill: false };
 
     // --- Ground Floor ---
     b.slab(-55, -55, 55, 55, -1, 1, floorOpts);
