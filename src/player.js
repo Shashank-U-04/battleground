@@ -334,7 +334,13 @@ export class Player {
         let targetFov = this.baseFOV;
         if (sprinting) targetFov += 10;
         if (this.grappling) targetFov += 15;
-        this.fovSpring.target = targetFov - this.baseFOV;
+        
+        let weaponZoom = 0;
+        if (this.weapons && this.weapons.ads && this.weapons.slots[this.weapons.activeSlot].def.adsZoom) {
+            weaponZoom = this.weapons.slots[this.weapons.activeSlot].def.adsZoom;
+        }
+        
+        this.fovSpring.target = (targetFov - this.baseFOV) + weaponZoom;
 
         this.eye.set(this.body.pos.x, this.body.pos.y + eyeHeight + this.landBob.value + this.viewBob.value, this.body.pos.z);
         this.eye.add(this.recoilSpring.value);

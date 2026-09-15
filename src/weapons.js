@@ -139,10 +139,10 @@ export class Weapons {
 
   update(dt, input) {
     // 1. Weapon switching
-    if (input.pressed('1')) this.switchWeapon(0);
-    if (input.pressed('2')) this.switchWeapon(1);
-    if (input.pressed('3')) this.switchWeapon(2);
-    if (input.pressed('4')) this.switchWeapon(3);
+    if (input.pressed('slot1')) this.switchWeapon(0);
+    if (input.pressed('slot2')) this.switchWeapon(1);
+    if (input.pressed('slot3')) this.switchWeapon(2);
+    if (input.pressed('slot4')) this.switchWeapon(3);
 
     // Scroll wheel weapon switching
     if (input.pressed('prevWeapon')) {
@@ -164,11 +164,6 @@ export class Weapons {
     const canADS = def.name === 'Rifle' || def.name === 'Sniper' || def.name === 'Shotgun';
     this.ads = canADS && input.down('aim');
     this.adsT = damp(this.adsT, this.ads ? 1 : 0, 15, dt);
-
-    if (this.player && this.player.fovSpring) {
-      const zoom = (def.adsZoom && this.ads) ? def.adsZoom : 0;
-      this.player.fovSpring.target = zoom; // assuming base FOV is added elsewhere, or target is offset
-    }
 
     if (this.hud && this.hud.setSniperScope) {
       this.hud.setSniperScope(def.name === 'Sniper' && this.adsT > 0.8);
